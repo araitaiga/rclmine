@@ -45,7 +45,7 @@ install(
 # ##############################
 # Add publisher node
 add_executable(rclmine_pub_node
-  src/rclmine/main_pub.cpp
+  src/rclmine/usecase/main_pub.cpp
 )
 
 target_include_directories(rclmine_pub_node
@@ -71,7 +71,7 @@ install(
 # #################################
 # Add the subscriber node
 add_executable(rclmine_sub_node
-  src/rclmine/main_sub.cpp
+  src/rclmine/usecase/main_sub.cpp
 )
 
 target_include_directories(rclmine_sub_node
