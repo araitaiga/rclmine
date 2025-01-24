@@ -27,7 +27,7 @@ $ ros2 run rclmine rclmine_sub_node
 
 2. Run rclmine_pub_node
 ```
-ros2 run rclmine rclmine_pub_node
+$ ros2 run rclmine rclmine_pub_node
 ```
 ```
 [Main] start main
