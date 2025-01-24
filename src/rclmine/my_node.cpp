@@ -1,0 +1,61 @@
+#include "my_rcl/my_node.h"
+
+namespace rclmine
+{
+// https://github.com/ros2/rcl/blob/3ea07c7e853aa51f843c1ba686927352b85fc5e1/rcl/include/rcl/node.h#L106-L116
+MyNode::MyNode(const std::string & node_name, const std::string & name_space, rcl_context_t context)
+{
+  context_ = context;
+  std::cout << "[MyNode::Constructor] MyNode constructor" << std::endl;
+
+  node_handle_ = std::make_unique<rcl_node_t>(rcl_get_zero_initialized_node());
+  std::cout << "[MyNode::Constructor] MyNode handle created" << std::endl;
+
+  auto node_options = rcl_node_get_default_options();
+
+  std::cout << "[MyNode::Constructor] Context and MyNode Options are initialized" << std::endl;
+
+  rcl_ret_t ret = rcl_node_init(
+    node_handle_.get(), node_name.c_str(), name_space.c_str(), &context, &node_options);
+
+  if (ret != RCL_RET_OK) {
+    throw std::runtime_error("Failed to initialize node");
+  }
+  std::cout << "[MyNode::Constructor] MyNode is constructed" << std::endl;
+}
+
+void MyNode::createPublisher(const std::string & topic_name)
+{
+  publisher_ = std::make_unique<MyPublisher>(node_handle_.get(), topic_name);
+}
+void MyNode::publish(const std::string & msg_content)
+{
+  if (!publisher_) return;
+  publisher_->publish(msg_content);
+}
+
+void MyNode::createSubscription(const std::string & topic_name)
+{
+  subscription_ = std::make_unique<MySubscription>(node_handle_.get(), topic_name, context_);
+}
+
+void MyNode::subscribe()
+{
+  if (!subscription_) return;
+  subscription_->subscribe();
+}
+
+MyNode::~MyNode()
+{
+  publisher_.reset();
+  subscription_.reset();
+
+  rcl_ret_t ret_nodeinit = rcl_node_fini(node_handle_.get());
+  if (ret_nodeinit != RCL_RET_OK) {
+    std::cerr << "Failed to fini node" << std::endl;
+  }
+
+  std::cout << "[MyNode::Destructor] MyNode is destructed" << std::endl;
+}
+
+}  // namespace rclmine
