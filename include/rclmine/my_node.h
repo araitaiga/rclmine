@@ -12,8 +12,8 @@
 #include <string>
 #include <thread>
 
-#include "my_rcl/my_publisher.h"
-#include "my_rcl/my_subscription.h"
+#include "rclmine/my_publisher.h"
+#include "rclmine/my_subscription.h"
 
 namespace rclmine
 {
