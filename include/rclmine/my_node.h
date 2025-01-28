@@ -11,6 +11,7 @@
 #include <thread>
 
 #include "rclmine/my_publisher.h"
+#include "rclmine/my_service.h"
 #include "rclmine/my_subscription.h"
 
 namespace rclmine
@@ -27,10 +28,13 @@ public:
   void createSubscription(const std::string & topic_name);
   void subscribe();
 
+  void createService(const std::string & service_name);
+
 private:
   std::unique_ptr<rcl_node_t> node_handle_;
   std::unique_ptr<MyPublisher> publisher_;
   std::unique_ptr<MySubscription> subscription_;
+  std::unique_ptr<MyService> service_;
   rcl_context_t context_;
 };
 

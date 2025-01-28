@@ -45,10 +45,16 @@ void MyNode::subscribe()
   subscription_->subscribe();
 }
 
+void MyNode::createService(const std::string & service_name)
+{
+  service_ = std::make_unique<MyService>(node_handle_.get(), service_name);
+}
+
 MyNode::~MyNode()
 {
   publisher_.reset();
   subscription_.reset();
+  service_.reset();
 
   rcl_ret_t ret_nodeinit = rcl_node_fini(node_handle_.get());
   if (ret_nodeinit != RCL_RET_OK) {

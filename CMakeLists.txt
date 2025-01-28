@@ -12,6 +12,7 @@ find_package(rcl REQUIRED)
 find_package(rcl_action REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 add_library(rclmine SHARED
   src/rclmine/my_node.cpp
@@ -29,6 +30,7 @@ ament_target_dependencies(rclmine
   rcl_action
   rcutils
   std_msgs
+  example_interfaces
 )
 install(
   TARGETS rclmine EXPORT ${PROJECT_NAME}
