@@ -2,13 +2,13 @@
 #include <rcl/node.h>
 #include <rcl/rcl.h>
 #include <rcl/subscription.h>
-#include <rosidl_runtime_c/string.h>
-#include <rosidl_runtime_c/string_functions.h>
-#include <std_msgs/msg/string.h>
-
+// #include <rosidl_runtime_c/string_functions.h>
+// #include <std_msgs/msg/string.h>
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <rosidl_typesupport_cpp/message_type_support.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -32,8 +32,12 @@ public:
 
     // auto type_support =
     //   rosidl_typesupport_c__get_message_type_support_handle__std_msgs__msg__String(); // でも可
+    // const rosidl_message_type_support_t * type_support =
+    //   ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String); // でも可
+
+    // https://github.com/ros2/rcl/blob/3ea07c7e853aa51f843c1ba686927352b85fc5e1/rcl/include/rcl/subscription.h#L98-L103
     const rosidl_message_type_support_t * type_support =
-      ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String);
+      rosidl_typesupport_cpp::get_message_type_support_handle<std_msgs::msg::String>();
 
     rcl_ret_t ret = rcl_subscription_init(
       subscription_handle_.get(), node_handle_, type_support, topic_name.c_str(),
@@ -124,16 +128,24 @@ public:
 
       for (size_t i = 0; i < wait_set.size_of_subscriptions; i++) {
         if (wait_set.subscriptions[i]) {
-          std_msgs__msg__String * msg = std_msgs__msg__String__create();
+          // std_msgs__msg__String * msg = std_msgs__msg__String__create();
+          // C++ style
+          auto msg = std::make_unique<std_msgs::msg::String>();
 
           rmw_message_info_t message_info;
           // wait_set.subscriptions[i] == subscription_handle_.get() or subscription_handle2_.get()
-          auto ret_take =
-            rcl_take(wait_set.subscriptions[i], static_cast<void *>(msg), &message_info, nullptr);
+          // auto ret_take =
+          //   rcl_take(wait_set.subscriptions[i], static_cast<void *>(msg), &message_info, nullptr);
+          // C++ style
+          auto ret_take = rcl_take(wait_set.subscriptions[i], msg.get(), &message_info, nullptr);
           if (ret_take == RCL_RET_OK) {
-            std::cout << "[MyNode::subscribe] Received: " << msg->data.data << std::endl;
+            // std::cout << "[MyNode::subscribe] Received: " << msg->data.data << std::endl;
+            // C++ style
+            std::cout << "[MyNode::subscribe] Received: " << msg->data << std::endl;
           }
-          std_msgs__msg__String__destroy(msg);
+          // std_msgs__msg__String__destroy(msg);
+          // C++ style
+          msg.reset();
         }
       }
 

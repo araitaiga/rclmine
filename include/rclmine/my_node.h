@@ -1,13 +1,11 @@
 #pragma once
 #include <rcl/node.h>
 #include <rcl/rcl.h>
-#include <rosidl_runtime_c/string.h>
-#include <rosidl_runtime_c/string_functions.h>
-#include <std_msgs/msg/string.h>
 
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <std_msgs/msg/string.hpp>
 #include <stdexcept>
 #include <string>
 #include <thread>
