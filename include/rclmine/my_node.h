@@ -18,13 +18,20 @@ namespace rclmine
 {
 class MyNode
 {
+private:
+  std::shared_ptr<rcl_node_t> node_handle_;
+  std::vector<std::shared_ptr<BaseSubscription>> subscriptions_;
+  std::vector<std::shared_ptr<BaseService>> services_;
+  std::vector<std::shared_ptr<BaseClient>> clients_;
+  rcl_context_t context_;
+
 public:
   MyNode(const std::string & node_name, const std::string & name_space, rcl_context_t context)
   {
     context_ = context;
     std::cout << "[MyNode::Constructor] MyNode constructor" << std::endl;
 
-    node_handle_ = std::make_unique<rcl_node_t>(rcl_get_zero_initialized_node());
+    node_handle_ = std::make_shared<rcl_node_t>(rcl_get_zero_initialized_node());
     std::cout << "[MyNode::Constructor] MyNode handle created" << std::endl;
 
     auto node_options = rcl_node_get_default_options();
@@ -42,7 +49,8 @@ public:
   ~MyNode()
   {
     subscriptions_.clear();
-    service_.reset();
+    services_.clear();
+    clients_.clear();
 
     rcl_ret_t ret_nodeinit = rcl_node_fini(node_handle_.get());
     if (ret_nodeinit != RCL_RET_OK) {
@@ -76,38 +84,38 @@ public:
     return subscription_handles;
   }
 
-  void createService(const std::string & service_name)
+  template <typename MessageT>
+  void createService(
+    const std::string & service_name, std::function<void(rcl_service_t *)> callback)
   {
-    service_ = std::make_unique<MyService>(node_handle_.get(), service_name, context_);
+    auto service =
+      std::make_shared<MyService<MessageT>>(node_handle_.get(), service_name, context_, callback);
+    services_.push_back(service);
   }
-  std::shared_ptr<rcl_service_t> getService()
+  std::vector<ServiceCallbackPair> getServices()
   {
-    if (service_) {
-      return service_->getService();
-    } else {
-      return nullptr;
+    std::vector<ServiceCallbackPair> service_handles;
+    for (const auto & service : services_) {
+      service_handles.push_back(service->getService());
     }
+    return service_handles;
   }
 
-  void createClient(const std::string & service_name)
+  template <typename MessageT>
+  std::shared_ptr<MyClient<MessageT>> createClient(const std::string & service_name)
   {
-    client_ = std::make_unique<MyClient>(node_handle_.get(), service_name, context_);
+    auto client = std::make_shared<MyClient<MessageT>>(node_handle_.get(), service_name, context_);
+    clients_.push_back(client);
+    return client;
   }
-  std::shared_ptr<rcl_client_t> getClient()
+  std::vector<std::shared_ptr<rcl_client_t>> getClients()
   {
-    if (client_) {
-      return client_->getClient();
-    } else {
-      return nullptr;
+    std::vector<std::shared_ptr<rcl_client_t>> client_handles;
+    for (const auto & client : clients_) {
+      client_handles.push_back(client->getClient());
     }
+    return client_handles;
   }
-
-private:
-  std::unique_ptr<rcl_node_t> node_handle_;
-  std::vector<std::shared_ptr<BaseSubscription>> subscriptions_;
-  std::unique_ptr<MyService> service_;
-  std::unique_ptr<MyClient> client_;
-  rcl_context_t context_;
 };
 
 }  // namespace rclmine

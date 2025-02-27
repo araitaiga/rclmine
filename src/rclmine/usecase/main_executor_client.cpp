@@ -26,16 +26,22 @@ int main(int argc, char ** argv)
   std::cout << "[Main] Done rcl_init()" << std::endl;
   {
     rclmine::MyNode node("arai_node", "arai_namespace", context);
-    std::cout << "[Main] Create Publisher" << std::endl;
-    auto publisher = node.createPublisher<std_msgs::msg::String>("arai_topic");
+    std::cout << "[Main] Create Client" << std::endl;
+    auto client = node.createClient<example_interfaces::srv::AddTwoInts>("arai_service");
 
-    std::cout << "[Main] Start publish" << std::endl;
+    // executorを定義しないと, buildは通るが実行時エラー
+    rclmine::MyExecutor executor(context);
+    executor.addMyNode(&node);
+
+    example_interfaces::srv::AddTwoInts::Request req;
+    req.a = 1;
+    req.b = 2;
+    client->request(req);
+
+    std::cout << "[Main] Start client" << std::endl;
 
     while (true) {
-      std_msgs::msg::String msg;
-      msg.data = "Hello, arai!!!";
-      publisher->publish(msg);
-      std::cout << "[Main] Message published: " << msg.data << std::endl;
+      executor.spin();
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
   }

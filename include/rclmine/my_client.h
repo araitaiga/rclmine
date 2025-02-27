@@ -5,7 +5,7 @@
 #include <rcl/rcl.h>
 
 #include <chrono>
-#include <example_interfaces/srv/add_two_ints.hpp>
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <rosidl_typesupport_cpp/service_type_support.hpp>
@@ -15,7 +15,16 @@
 
 namespace rclmine
 {
-class MyClient
+
+class BaseClient
+{
+public:
+  virtual ~BaseClient() = default;
+  virtual std::shared_ptr<rcl_client_t> getClient() = 0;
+};
+
+template <typename MessageT>
+class MyClient : public BaseClient
 {
 public:
   MyClient(rcl_node_t * node_handle, const std::string & service_name, rcl_context_t context)
@@ -26,8 +35,7 @@ public:
     rcl_client_options_t client_options = rcl_client_get_default_options();
 
     const rosidl_service_type_support_t * type_support =
-      rosidl_typesupport_cpp::get_service_type_support_handle<
-        example_interfaces::srv::AddTwoInts>();
+      rosidl_typesupport_cpp::get_service_type_support_handle<MessageT>();
 
     rcl_ret_t ret = rcl_client_init(
       client_handle_.get(), node_handle_, type_support, service_name.c_str(), &client_options);
@@ -48,18 +56,14 @@ public:
     std::cout << "[MyClient::Destructor] Client is destructed" << std::endl;
   }
 
-  void request(const int a, const int b)
+  void request(const typename MessageT::Request & req_msg)
   {
-    example_interfaces::srv::AddTwoInts::Request req;
-    req.a = a;
-    req.b = b;
     int64_t sequence_number;
-    rcl_ret_t ret = rcl_send_request(client_handle_.get(), &req, &sequence_number);
+    rcl_ret_t ret = rcl_send_request(client_handle_.get(), &req_msg, &sequence_number);
     if (ret != RCL_RET_OK) {
       throw std::runtime_error("Failed to send request");
     }
-    std::cout << "[MyClient::sendRequest] Request sent: a=" << req.a << ", b=" << req.b
-              << std::endl;
+    std::cout << "[MyClient::request] Request sent" << std::endl;
   }
 
   std::shared_ptr<rcl_client_t> getClient() { return client_handle_; }
