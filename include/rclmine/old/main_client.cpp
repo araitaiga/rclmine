@@ -22,15 +22,10 @@ int main(int argc, char ** argv)
   {
     rclmine::MyNode node("arai_node", "arai_namespace", context);
 
-    node.createPublisher("arai_topic");
-    std::cout << "[Main] Publisher created" << std::endl;
+    node.createClient("arai_service");
 
-    for (size_t i = 0; i < 10; ++i) {
-      node.publish("Hello, world! " + std::to_string(i));
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-
-    std::cout << "[Main] Published" << std::endl;
+    std::cout << "[Main] Start client" << std::endl;
+    node.sendRequest(1, 2);
   }
   std::cout << "[Main] Node destroyed" << std::endl;
 

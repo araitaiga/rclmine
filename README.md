@@ -1,11 +1,13 @@
 # rclmine
-rclクライアントライブラリの実験用
 
+rclクライアントライブラリの実験
 
 1. Run rclmine_sub_node
+
 ```
-$ ros2 run rclmine rclmine_sub_node
+ros2 run rclmine rclmine_sub_node
 ```
+
 ```
 [Main] start main
 [Main] Done rcl_get_zero_initialized_init_options()
@@ -26,9 +28,11 @@ $ ros2 run rclmine rclmine_sub_node
 ```
 
 2. Run rclmine_pub_node
+
 ```
-$ ros2 run rclmine rclmine_pub_node
+ros2 run rclmine rclmine_pub_node
 ```
+
 ```
 [Main] start main
 [Main] Done rcl_get_zero_initialized_init_options()
@@ -50,6 +54,7 @@ $ ros2 run rclmine rclmine_pub_node
 ```
 
 The output on the subscriber side will be as follows.  
+
 ```
 [MyNode::subscribe] Timeout
 [MyNode::subscribe] Timeout
@@ -63,3 +68,26 @@ The output on the subscriber side will be as follows.
 [MyNode::subscribe] Received: Hello, world! 3
 ...
 ```
+
+## rclクライアントライブラリで実装するもの
+
+- executor
+- node
+
+- publisher
+- subscriber
+- service server
+- service client
+- timer
+
+- parameter service
+  - Nodeがインスタンス化されるときにデフォルトで作成される
+
+- action
+
+etc.
+
+
+## 参考
+クライアントライブラリの実装例と使い方  
+https://github.com/ros2/rclc/tree/rolling/rclc_examples/src

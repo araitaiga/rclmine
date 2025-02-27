@@ -47,7 +47,24 @@ void MyNode::subscribe()
 
 void MyNode::createService(const std::string & service_name)
 {
-  service_ = std::make_unique<MyService>(node_handle_.get(), service_name);
+  service_ = std::make_unique<MyService>(node_handle_.get(), service_name, context_);
+}
+
+void MyNode::service()
+{
+  if (!service_) return;
+  service_->service();
+}
+
+void MyNode::createClient(const std::string & service_name)
+{
+  client_ = std::make_unique<MyClient>(node_handle_.get(), service_name, context_);
+}
+
+void MyNode::sendRequest(int64_t a, int64_t b)
+{
+  if (!client_) return;
+  client_->sendRequest(a, b);
 }
 
 MyNode::~MyNode()
