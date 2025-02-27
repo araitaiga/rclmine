@@ -68,16 +68,17 @@ public:
   }
 
   template <typename MessageT>
-  void createSubscription(const std::string & topic_name)
+  void createSubscription(
+    const std::string & topic_name, std::function<void(rcl_subscription_t *)> callback)
   {
-    auto subscription =
-      std::make_shared<MySubscription<MessageT>>(node_handle_.get(), topic_name, context_);
+    auto subscription = std::make_shared<MySubscription<MessageT>>(
+      node_handle_.get(), topic_name, context_, callback);
     subscriptions_.push_back(subscription);
   }
 
-  std::vector<std::shared_ptr<rcl_subscription_t>> getSubscriptions()
+  std::vector<SubscriptionCallbackPair> getSubscriptions()
   {
-    std::vector<std::shared_ptr<rcl_subscription_t>> subscription_handles;
+    std::vector<SubscriptionCallbackPair> subscription_handles;
     for (const auto & subscription : subscriptions_) {
       subscription_handles.push_back(subscription->getSubscription());
     }

@@ -15,6 +15,13 @@
 
 namespace rclmine
 {
+
+struct SubscriptionCallbackPair
+{
+  rcl_subscription_t * subscription;
+  std::function<void(rcl_subscription_t *)> callback;
+};
+
 // context
 // https://github.com/ros2/rcl/blob/bfcf66d0d8beece02c195999afe2eb5daeef0412/rcl/include/rcl/context.h#L113-L150
 // contextのargumentの中身
@@ -26,7 +33,7 @@ class BaseSubscription
 {
 public:
   virtual ~BaseSubscription() = default;
-  virtual std::shared_ptr<rcl_subscription_t> getSubscription() = 0;
+  virtual SubscriptionCallbackPair getSubscription() = 0;
 };
 
 template <typename MessageT>
@@ -34,8 +41,10 @@ class MySubscription : public BaseSubscription
 {
 public:
   // https://github.com/ros2/rcl/blob/3ea07c7e853aa51f843c1ba686927352b85fc5e1/rcl/include/rcl/subscription.h#L121-L140
-  MySubscription(rcl_node_t * node_handle, const std::string & topic_name, rcl_context_t context)
-  : node_handle_(node_handle), context_(context)
+  MySubscription(
+    rcl_node_t * node_handle, const std::string & topic_name, rcl_context_t context,
+    std::function<void(rcl_subscription_t *)> callback)
+  : node_handle_(node_handle), context_(context), callback_(callback)
   {
     std::cout << "[MySubscription::Constructor] MySubscription constructor" << std::endl;
     subscription_handle_ =
@@ -71,10 +80,17 @@ public:
     std::cout << "[MySubscription::Destructor] Subscription is destructed" << std::endl;
   }
 
-  std::shared_ptr<rcl_subscription_t> getSubscription() override { return subscription_handle_; }
+  SubscriptionCallbackPair getSubscription() override
+  {
+    SubscriptionCallbackPair pair;
+    pair.subscription = subscription_handle_.get();
+    pair.callback = callback_;
+    return pair;
+  }
 
 private:
   std::shared_ptr<rcl_subscription_t> subscription_handle_;
+  std::function<void(rcl_subscription_t *)> callback_;
   rcl_node_t * node_handle_;
   rcl_context_t context_;
 };

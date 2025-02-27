@@ -31,7 +31,7 @@ private:
   // service,client,pub,subなどのイベント監視のデータセット
   rcl_wait_set_t wait_set_;
 
-  std::vector<rcl_subscription_t *> subscriptions_;
+  std::vector<SubscriptionCallbackPair> subscriptions_;
   std::vector<rcl_guard_condition_t *> guard_conditions_;
   std::vector<rcl_timer_t *> timers_;
   std::vector<rcl_client_t *> clients_;
@@ -84,7 +84,8 @@ public:
     }
 
     for (auto subscription : subscriptions_) {
-      rcl_wait_set_add_subscription(&wait_set_, subscription, nullptr);
+      auto subscription_handle = subscription.subscription;
+      rcl_wait_set_add_subscription(&wait_set_, subscription_handle, nullptr);
     }
 
     for (auto client : clients_) {
@@ -105,7 +106,8 @@ public:
     // subscriptionの処理
     for (size_t i = 0; i < subscriptions_.size(); ++i) {
       if (wait_set_.subscriptions[i]) {
-        handleSubscription(subscriptions_[i]);
+        auto callback = subscriptions_[i].callback;
+        callback(subscriptions_[i].subscription);
       }
     }
 
@@ -133,11 +135,9 @@ public:
   }
 
 private:
-  void addSubscriptions(std::vector<std::shared_ptr<rcl_subscription_t>> subscriptions)
+  void addSubscriptions(std::vector<SubscriptionCallbackPair> subscriptions)
   {
-    for (auto subscription : subscriptions) {
-      subscriptions_.push_back(subscription.get());
-    }
+    subscriptions_.insert(subscriptions_.end(), subscriptions.begin(), subscriptions.end());
   }
 
   void addClients(std::vector<std::shared_ptr<rcl_client_t>> clients)
