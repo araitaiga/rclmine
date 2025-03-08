@@ -2,6 +2,7 @@
 #include <rcl/rcl.h>
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 namespace rclmine
@@ -9,7 +10,9 @@ namespace rclmine
 class RCLUtils
 {
 public:
-  static rcl_context_t init(int argc, char ** argv)
+  RCLUtils() = default;
+
+  static rcl_context_t * init(int argc, char ** argv)
   {
     std::cout << "[RCLUtils] start main" << std::endl;
     rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
@@ -18,10 +21,14 @@ public:
     if (opt_init_ret != RCL_RET_OK) {
       throw std::runtime_error("Failed to initialize init options");
     }
+    // contextはコピーしない. セグフォする
+    // https://github.com/ros2/rclcpp/blob/9db7659dab84020923f2d1aa97a3195e65fdb90a/rclcpp/src/rclcpp/context.cpp#L203-L207
     std::cout << "[RCLUtils] Done rcl_get_zero_initialized_context()" << std::endl;
-    rcl_context_t context = rcl_get_zero_initialized_context();
+    rcl_context_t * context = new rcl_context_t;
+    *context = rcl_get_zero_initialized_context();
+
     std::cout << "[RCLUtils] Done rcl_init_options_init()" << std::endl;
-    rcl_ret_t init_ret = rcl_init(argc, argv, &init_options, &context);
+    rcl_ret_t init_ret = rcl_init(argc, argv, &init_options, context);
     if (init_ret != RCL_RET_OK) {
       throw std::runtime_error("Failed to initialize context");
     }
@@ -29,9 +36,9 @@ public:
     return context;
   }
 
-  static void shutdown(rcl_context_t context)
+  static void shutdown(rcl_context_t * context)
   {
-    rcl_ret_t fini_ret = rcl_shutdown(&context);
+    rcl_ret_t fini_ret = rcl_shutdown(context);
     if (fini_ret != RCL_RET_OK) {
       throw std::runtime_error("Failed to shutdown context");
     }

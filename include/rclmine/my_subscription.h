@@ -42,9 +42,9 @@ class MySubscription : public BaseSubscription
 public:
   // https://github.com/ros2/rcl/blob/3ea07c7e853aa51f843c1ba686927352b85fc5e1/rcl/include/rcl/subscription.h#L121-L140
   MySubscription(
-    rcl_node_t * node_handle, const std::string & topic_name, rcl_context_t context,
+    rcl_node_t * node_handle, const std::string & topic_name,
     std::function<void(rcl_subscription_t *)> callback)
-  : node_handle_(node_handle), context_(context), callback_(callback)
+  : node_handle_(node_handle), callback_(callback)
   {
     std::cout << "[MySubscription::Constructor] MySubscription constructor" << std::endl;
     subscription_handle_ =
@@ -92,7 +92,6 @@ private:
   std::shared_ptr<rcl_subscription_t> subscription_handle_;
   std::function<void(rcl_subscription_t *)> callback_;
   rcl_node_t * node_handle_;
-  rcl_context_t context_;
 };
 
 }  // namespace rclmine

@@ -10,12 +10,24 @@
 
 int main(int argc, char ** argv)
 {
-  rcl_context_t context = rclmine::RCLUtils::init(argc, argv);
+  rcl_context_t * context = rclmine::RCLUtils::init(argc, argv);
 
   {
     rclmine::MyNode node("arai_node", "arai_namespace", context);
     std::cout << "[Main] Create Client" << std::endl;
-    auto client = node.createClient<example_interfaces::srv::AddTwoInts>("arai_service");
+    auto client = node.createClient<example_interfaces::srv::AddTwoInts>(
+      "arai_service", [](rcl_client_t * client) {
+        std::cout << "[MyExecutor::handleClient] Start handling client" << std::endl;
+        rmw_request_id_t request_header;  // request_idが埋め込まれて返ってくる
+        example_interfaces::srv::AddTwoInts::Response response;
+        rcl_ret_t ret = rcl_take_response(client, &request_header, &response);
+        if (ret == RCL_RET_OK) {
+          std::cout << "[MyExecutor::handleClient] Response " << request_header.sequence_number
+                    << " received: sum=" << response.sum << std::endl;
+        } else {
+          std::cerr << "Failed to take response" << std::endl;
+        }
+      });
 
     rclmine::MyExecutor executor(context);
     executor.addMyNode(&node);

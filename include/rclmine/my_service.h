@@ -51,9 +51,9 @@ class MyService : public BaseService
 {
 public:
   MyService(
-    rcl_node_t * node_handle, const std::string & service_name, rcl_context_t context,
+    rcl_node_t * node_handle, const std::string & service_name,
     std::function<void(rcl_service_t *)> callback)
-  : node_handle_(node_handle), context_(context), callback_(callback)
+  : node_handle_(node_handle), callback_(callback)
   {
     std::cout << "[MyService::Constructor] MyService constructor" << std::endl;
     service_handle_ = std::make_shared<rcl_service_t>(rcl_get_zero_initialized_service());
@@ -82,7 +82,7 @@ public:
     std::cout << "[MyService::Destructor] Service is destructed" << std::endl;
   }
 
-  ServiceCallbackPair getService()
+  ServiceCallbackPair getService() override
   {
     ServiceCallbackPair pair;
     pair.service = service_handle_.get();
@@ -94,7 +94,6 @@ private:
   std::shared_ptr<rcl_service_t> service_handle_;
   std::function<void(rcl_service_t *)> callback_;
   rcl_node_t * node_handle_;
-  rcl_context_t context_;
 };
 
 }  // namespace rclmine

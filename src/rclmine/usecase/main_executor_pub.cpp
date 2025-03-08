@@ -10,7 +10,7 @@
 
 int main(int argc, char ** argv)
 {
-  rcl_context_t context = rclmine::RCLUtils::init(argc, argv);
+  rcl_context_t * context = rclmine::RCLUtils::init(argc, argv);
 
   {
     rclmine::MyNode node("arai_node", "arai_namespace", context);

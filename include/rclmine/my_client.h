@@ -16,19 +16,27 @@
 namespace rclmine
 {
 
+struct ServiceClientCallbackPair
+{
+  rcl_client_t * client;
+  std::function<void(rcl_client_t *)> callback;
+};
+
 class BaseClient
 {
 public:
   virtual ~BaseClient() = default;
-  virtual std::shared_ptr<rcl_client_t> getClient() = 0;
+  virtual ServiceClientCallbackPair getClient() = 0;
 };
 
 template <typename MessageT>
 class MyClient : public BaseClient
 {
 public:
-  MyClient(rcl_node_t * node_handle, const std::string & service_name, rcl_context_t context)
-  : node_handle_(node_handle), context_(context)
+  MyClient(
+    rcl_node_t * node_handle, const std::string & service_name,
+    std::function<void(rcl_client_t *)> callback)
+  : node_handle_(node_handle), callback_(callback)
   {
     std::cout << "[MyClient::Constructor] MyClient constructor" << std::endl;
     client_handle_ = std::make_shared<rcl_client_t>(rcl_get_zero_initialized_client());
@@ -66,12 +74,18 @@ public:
     std::cout << "[MyClient::request] Request sent" << std::endl;
   }
 
-  std::shared_ptr<rcl_client_t> getClient() { return client_handle_; }
+  ServiceClientCallbackPair getClient() override
+  {
+    ServiceClientCallbackPair pair;
+    pair.client = client_handle_.get();
+    pair.callback = callback_;
+    return pair;
+  }
 
 private:
   std::shared_ptr<rcl_client_t> client_handle_;
+  std::function<void(rcl_client_t *)> callback_;
   rcl_node_t * node_handle_;
-  rcl_context_t context_;
 };
 
 }  // namespace rclmine

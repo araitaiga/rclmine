@@ -23,12 +23,12 @@ private:
   std::vector<std::shared_ptr<BaseSubscription>> subscriptions_;
   std::vector<std::shared_ptr<BaseService>> services_;
   std::vector<std::shared_ptr<BaseClient>> clients_;
-  rcl_context_t context_;
 
 public:
-  MyNode(const std::string & node_name, const std::string & name_space, rcl_context_t context)
+  // 注意! rcl_context_tを値渡しすると, rcl_client_init()時などに実行時エラーが発生する
+  // ポインタを渡すことで解決
+  MyNode(const std::string & node_name, const std::string & name_space, rcl_context_t * context)
   {
-    context_ = context;
     std::cout << "[MyNode::Constructor] MyNode constructor" << std::endl;
 
     node_handle_ = std::make_shared<rcl_node_t>(rcl_get_zero_initialized_node());
@@ -39,7 +39,7 @@ public:
     std::cout << "[MyNode::Constructor] Context and MyNode Options are initialized" << std::endl;
 
     rcl_ret_t ret = rcl_node_init(
-      node_handle_.get(), node_name.c_str(), name_space.c_str(), &context, &node_options);
+      node_handle_.get(), node_name.c_str(), name_space.c_str(), context, &node_options);
 
     if (ret != RCL_RET_OK) {
       throw std::runtime_error("Failed to initialize node");
@@ -71,8 +71,8 @@ public:
   void createSubscription(
     const std::string & topic_name, std::function<void(rcl_subscription_t *)> callback)
   {
-    auto subscription = std::make_shared<MySubscription<MessageT>>(
-      node_handle_.get(), topic_name, context_, callback);
+    auto subscription =
+      std::make_shared<MySubscription<MessageT>>(node_handle_.get(), topic_name, callback);
     subscriptions_.push_back(subscription);
   }
 
@@ -86,11 +86,28 @@ public:
   }
 
   template <typename MessageT>
+  std::shared_ptr<MyClient<MessageT>> createClient(
+    const std::string & service_name, std::function<void(rcl_client_t *)> callback)
+  {
+    auto client = std::make_shared<MyClient<MessageT>>(node_handle_.get(), service_name, callback);
+    clients_.push_back(client);
+    return client;
+  }
+  std::vector<ServiceClientCallbackPair> getClients()
+  {
+    std::vector<ServiceClientCallbackPair> client_handles;
+    for (const auto & client : clients_) {
+      client_handles.push_back(client->getClient());
+    }
+    return client_handles;
+  }
+
+  template <typename MessageT>
   void createService(
     const std::string & service_name, std::function<void(rcl_service_t *)> callback)
   {
     auto service =
-      std::make_shared<MyService<MessageT>>(node_handle_.get(), service_name, context_, callback);
+      std::make_shared<MyService<MessageT>>(node_handle_.get(), service_name, callback);
     services_.push_back(service);
   }
   std::vector<ServiceCallbackPair> getServices()
@@ -100,22 +117,6 @@ public:
       service_handles.push_back(service->getService());
     }
     return service_handles;
-  }
-
-  template <typename MessageT>
-  std::shared_ptr<MyClient<MessageT>> createClient(const std::string & service_name)
-  {
-    auto client = std::make_shared<MyClient<MessageT>>(node_handle_.get(), service_name, context_);
-    clients_.push_back(client);
-    return client;
-  }
-  std::vector<std::shared_ptr<rcl_client_t>> getClients()
-  {
-    std::vector<std::shared_ptr<rcl_client_t>> client_handles;
-    for (const auto & client : clients_) {
-      client_handles.push_back(client->getClient());
-    }
-    return client_handles;
   }
 };
 
