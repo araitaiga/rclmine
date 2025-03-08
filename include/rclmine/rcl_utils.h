@@ -23,7 +23,7 @@ public:
     }
 
     // contextはコピーしない. セグフォする
-    // rcl_context_t型は内部でポインタを持っているため, コピーするとポインタが指す先のデータが同期されない
+    // rcl_context_t型は内部でポインタを持っているため, コピーするとポインタが指す先のデータが同期されない？
     // そのため, ヒープ領域に確保してポインタを渡す
     // https://github.com/ros2/rclcpp/blob/9db7659dab84020923f2d1aa97a3195e65fdb90a/rclcpp/src/rclcpp/context.cpp#L203-L207
     std::cout << "[RCLUtils] Done rcl_get_zero_initialized_context()" << std::endl;
