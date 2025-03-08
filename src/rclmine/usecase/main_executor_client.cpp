@@ -17,7 +17,6 @@ int main(int argc, char ** argv)
     std::cout << "[Main] Create Client" << std::endl;
     auto client = node.createClient<example_interfaces::srv::AddTwoInts>("arai_service");
 
-    // executorを定義しないと, buildは通るが実行時エラー
     rclmine::MyExecutor executor(context);
     executor.addMyNode(&node);
 
