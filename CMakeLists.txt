@@ -14,6 +14,14 @@ find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
 
+set(AMENT_DEPENDENCIES
+  rcl
+  rcl_action
+  rcutils
+  std_msgs
+  example_interfaces
+)
+
 # ##############################
 # Add executor node
 add_executable(rclmine_executor_pub
@@ -27,11 +35,7 @@ target_include_directories(rclmine_executor_pub
 )
 
 ament_target_dependencies(rclmine_executor_pub
-  rcl
-  rcl_action
-  rcutils
-  std_msgs
-  example_interfaces
+  ${AMENT_DEPENDENCIES}
 )
 install(
   TARGETS rclmine_executor_pub
@@ -51,11 +55,7 @@ target_include_directories(rclmine_executor_sub
 )
 
 ament_target_dependencies(rclmine_executor_sub
-  rcl
-  rcl_action
-  rcutils
-  std_msgs
-  example_interfaces
+  ${AMENT_DEPENDENCIES}
 )
 install(
   TARGETS rclmine_executor_sub
@@ -75,11 +75,7 @@ target_include_directories(rclmine_executor_client
 )
 
 ament_target_dependencies(rclmine_executor_client
-  rcl
-  rcl_action
-  rcutils
-  std_msgs
-  example_interfaces
+  ${AMENT_DEPENDENCIES}
 )
 install(
   TARGETS rclmine_executor_client
@@ -99,11 +95,7 @@ target_include_directories(rclmine_executor_service
 )
 
 ament_target_dependencies(rclmine_executor_service
-  rcl
-  rcl_action
-  rcutils
-  std_msgs
-  example_interfaces
+  ${AMENT_DEPENDENCIES}
 )
 install(
   TARGETS rclmine_executor_service

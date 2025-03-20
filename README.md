@@ -87,6 +87,18 @@ The output on the subscriber side will be as follows.
 
 etc.
 
+### parameter
+rclcppでの実装  
+実体はNodeのメンバのmapで保持, インターフェースとしてNodeにservice/clientを定義  
+
+- node_parameteres.cpp set_parameters_atomicallyでメンバ変数```std::map<std::string, ParameterInfo> parameters_;```に値を格納  
+--> Nodeのメンバとしてparamを管理  
+- parameter_service.cppで```get_parameters_service_```などをros serviceとして公開  
+内部のnode_parameters::get_parameters()を使用してparamの実体を取得し, responseで返している  
+
+
+
+
 ## 参考
 
 クライアントライブラリの実装例と使い方  
