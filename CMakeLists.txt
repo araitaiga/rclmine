@@ -13,6 +13,7 @@ find_package(rcl_action REQUIRED)
 find_package(rcutils REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(example_interfaces REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 
 set(AMENT_DEPENDENCIES
   rcl
@@ -23,7 +24,7 @@ set(AMENT_DEPENDENCIES
 )
 
 # ##############################
-# Add executor node
+# Add publisher
 add_executable(rclmine_executor_pub
   src/rclmine/usecase/main_executor_pub.cpp
 )
@@ -37,13 +38,9 @@ target_include_directories(rclmine_executor_pub
 ament_target_dependencies(rclmine_executor_pub
   ${AMENT_DEPENDENCIES}
 )
-install(
-  TARGETS rclmine_executor_pub
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 # ##############################
-# Add executor node
+# Add subscriber
 add_executable(rclmine_executor_sub
   src/rclmine/usecase/main_executor_sub.cpp
 )
@@ -57,13 +54,9 @@ target_include_directories(rclmine_executor_sub
 ament_target_dependencies(rclmine_executor_sub
   ${AMENT_DEPENDENCIES}
 )
-install(
-  TARGETS rclmine_executor_sub
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 # ##############################
-# Add executor node
+# Add client
 add_executable(rclmine_executor_client
   src/rclmine/usecase/main_executor_client.cpp
 )
@@ -77,13 +70,9 @@ target_include_directories(rclmine_executor_client
 ament_target_dependencies(rclmine_executor_client
   ${AMENT_DEPENDENCIES}
 )
-install(
-  TARGETS rclmine_executor_client
-  DESTINATION lib/${PROJECT_NAME}
-)
 
 # ##############################
-# Add executor node
+# Add service
 add_executable(rclmine_executor_service
   src/rclmine/usecase/main_executor_service.cpp
 )
@@ -97,8 +86,32 @@ target_include_directories(rclmine_executor_service
 ament_target_dependencies(rclmine_executor_service
   ${AMENT_DEPENDENCIES}
 )
+
+# ##############################
+# Add parameter
+add_executable(rclmine_parameter
+  src/rclmine/usecase/main_parameter.cpp
+)
+
+target_include_directories(rclmine_parameter
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+ament_target_dependencies(rclmine_parameter
+  ${AMENT_DEPENDENCIES}
+)
+
+# ##############################
+# Install
 install(
-  TARGETS rclmine_executor_service
+  TARGETS
+  rclmine_executor_pub
+  rclmine_executor_sub
+  rclmine_executor_client
+  rclmine_executor_service
+  rclmine_parameter
   DESTINATION lib/${PROJECT_NAME}
 )
 
