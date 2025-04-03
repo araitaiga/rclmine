@@ -16,7 +16,7 @@ namespace rclmine
 
 // rclcppではパラメータの型をラップしている
 // https://github.com/ros2/rclcpp/blob/1564fc23c62d7966db835c3e5a4c6e3ad0012288/rclcpp/include/rclcpp/parameter_value.hpp#L33-L45
-// rclcppではパラメータ値を保持する構造体をラップしている
+// rclcppではパラメータ値を保持する構造体をラップしている. コンストラクタで自動的に型を判別できる
 // https://github.com/ros2/rclcpp/blob/1564fc23c62d7966db835c3e5a4c6e3ad0012288/rclcpp/include/rclcpp/parameter_value.hpp#L72-L357
 
 using rcl_interfaces::msg::ParameterType;
@@ -26,7 +26,7 @@ class MyParameter
 private:
   // https://github.com/ros2/rcl_interfaces/blob/rolling/rcl_interfaces/msg/ParameterValue.msg
   std::map<std::string, ParameterValue> parameters_;
-  std::vector<std::function<void(const std::string &, const ParameterValue &)>> callbacks_;
+  // std::vector<std::function<void(const std::string &, const ParameterValue &)>> callbacks_;
 
 public:
   explicit MyParameter() {}
@@ -67,7 +67,7 @@ public:
   {
     auto it = parameters_.find(name);
     if (it == parameters_.end()) {
-      std::cout << "Parameter not declared: " << name << std::endl;
+      std::cout << "Parameter is not declared: " << name << std::endl;
       return false;
     }
 
@@ -75,16 +75,20 @@ public:
     uint8_t current_type = get_parameter_type(it->second);
     uint8_t new_type = get_parameter_type(value);
     if (current_type != new_type) {
+      std::cout << "Parameter type mismatch: " << name
+                << " Current type: " << static_cast<int>(current_type)
+                << " New type: " << static_cast<int>(new_type) << std::endl;
       return false;
     }
 
+    std::cout << "Set parameter: " << name << std::endl;
     // 値を更新
     parameters_[name] = value;
 
-    // コールバックを呼び出す
-    for (const auto & callback : callbacks_) {
-      callback(name, value);
-    }
+    // // コールバックを呼び出す
+    // for (const auto & callback : callbacks_) {
+    //   callback(name, value);
+    // }
 
     return true;
   }
@@ -99,14 +103,15 @@ public:
     return names;
   }
 
-  // パラメータイベントのコールバックを追加
-  // https://github.com/ros2/rclcpp/blob/1564fc23c62d7966db835c3e5a4c6e3ad0012288/rclcpp/include/rclcpp/parameter_event_handler.hpp#L233-L252
-  void add_parameter_callback(
-    std::function<void(const std::string &, const ParameterValue &)> callback)
-  {
-    callbacks_.push_back(callback);
-  }
+  // // パラメータイベントのコールバックを追加する例
+  // // https://github.com/ros2/rclcpp/blob/1564fc23c62d7966db835c3e5a4c6e3ad0012288/rclcpp/include/rclcpp/parameter_event_handler.hpp#L233-L252
+  // void add_parameter_callback(
+  //   std::function<void(const std::string &, const ParameterValue &)> callback)
+  // {
+  //   callbacks_.push_back(callback);
+  // }
 
+  // https://docs.ros2.org/foxy/api/rcl_interfaces/msg/ParameterValue.html
   // [ParameterValue]
   // uint8 type
   // bool bool_value
@@ -122,23 +127,23 @@ public:
   // ParameterValueの型を取得するユーティリティ関数
   static uint8_t get_parameter_type(const ParameterValue & value)
   {
-    if (value.bool_value) {
+    if (value.type == 0) {
       return ParameterType::PARAMETER_BOOL;
-    } else if (value.integer_value != 0) {
+    } else if (value.type == 1) {
       return ParameterType::PARAMETER_INTEGER;
-    } else if (value.double_value != 0.0) {
+    } else if (value.type == 2) {
       return ParameterType::PARAMETER_DOUBLE;
-    } else if (!value.string_value.empty()) {
+    } else if (value.type == 3) {
       return ParameterType::PARAMETER_STRING;
-    } else if (!value.byte_array_value.empty()) {
+    } else if (value.type == 4) {
       return ParameterType::PARAMETER_BYTE_ARRAY;
-    } else if (!value.bool_array_value.empty()) {
+    } else if (value.type == 5) {
       return ParameterType::PARAMETER_BOOL_ARRAY;
-    } else if (!value.integer_array_value.empty()) {
+    } else if (value.type == 6) {
       return ParameterType::PARAMETER_INTEGER_ARRAY;
-    } else if (!value.double_array_value.empty()) {
+    } else if (value.type == 7) {
       return ParameterType::PARAMETER_DOUBLE_ARRAY;
-    } else if (!value.string_array_value.empty()) {
+    } else if (value.type == 8) {
       return ParameterType::PARAMETER_STRING_ARRAY;
     }
     return ParameterType::PARAMETER_NOT_SET;
@@ -184,36 +189,12 @@ public:
     return value.string_value;
   }
 
-  // bool型パラメータを設定
-  bool set_parameter_bool(const std::string & name, bool value)
-  {
-    ParameterValue param_value;
-    param_value.bool_value = value;
-    return set_parameter(name, param_value);
-  }
-
-  // int型パラメータを設定
-  bool set_parameter_int(const std::string & name, int64_t value)
-  {
-    ParameterValue param_value;
-    param_value.integer_value = value;
-    return set_parameter(name, param_value);
-  }
-
-  // double型パラメータを設定
-  bool set_parameter_double(const std::string & name, double value)
-  {
-    ParameterValue param_value;
-    param_value.double_value = value;
-    return set_parameter(name, param_value);
-  }
-
-  // string型パラメータを設定
-  bool set_parameter_string(const std::string & name, const std::string & value)
-  {
-    ParameterValue param_value;
-    param_value.string_value = value;
-    return set_parameter(name, param_value);
-  }
+  // // bool型パラメータを設定する関数の例
+  // bool set_parameter_bool(const std::string & name, bool value)
+  // {
+  //   ParameterValue param_value;
+  //   param_value.bool_value = value;
+  //   return set_parameter(name, param_value);
+  // }
 };
 }  // namespace rclmine

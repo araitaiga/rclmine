@@ -80,6 +80,7 @@ public:
       if (ret == RCL_RET_OK) {
         for (const auto & param : req->parameters) {
           SetParametersResult result;
+          std::cout << "Try to set parameter: " << param.name << std::endl;
           result.successful = parameter_storage_->set_parameter(param.name, param.value);
 
           if (!result.successful) {
